@@ -1,71 +1,63 @@
-# 4.Execution_of_NetworkCommands
+# 5a_Create_Socket_for_HTTP_for_webpage_upload_and_download
+## AIM
+To write a PYTHON program for socket for HTTP for web page upload and download
 
-## AIM :Use of Network commands in Real Time environment
-## Software : 
-Command Prompt And Network Protocol Analyzer
-## Procedure: 
-To do this EXPERIMENT- follows these steps:
-<BR>
-In this EXPERIMENT- students have to understand basic networking commands e.g cpdump, netstat, ifconfig, nslookup ,traceroute and also Capture ping and traceroute PDUs using a network protocol analyzer 
-<BR>
-All commands related to Network configuration which includes how to switch to privilege mode
-<BR>
-and normal mode and how to configure router interface and how to save this configuration to
-<BR>
-flash memory or permanent memory.
-<BR>
-This commands includes
-<BR>
-• Configuring the Router commands
-<BR>
-• General Commands to configure network
-<BR>
-• Privileged Mode commands of a router 
-<BR>
-• Router Processes & Statistics
-<BR>
-• IP Commands
-<BR>
-• Other IP Commands e.g. show ip route etc.
-<BR>
-## Program:
-### CLIENT:
-```
- import socket 
-from pythonping import ping 
-s=socket.socket() 
-s.bind(('localhost'8000)) 
-s.listen(5) 
-c,addr=s.accept() 
-while True: 
-hostname=c.recv(1024).decode() 
-try: 
-c.send(str(ping(hostname, verbose=False)).encode()) 
-except KeyError: 
-c.send("Not Found".encode())
-```
+## Algorithm
+1. Start the program.
 
-### SERVER:
-```
-import socket 
-s=socket.socket() 
-s.connect(('localhost',8000)) 
-while True: 
-ip=input("Enter the website you want to ping ") 
-s.send(ip.encode()) 
-print(s.recv(1024).decode())
-```
-### TRACEROUTE COMMAND:
-```
- from scapy.all import*     
-target = ["www.google.com"]     
-result, unans = traceroute(target,maxttl=32) 
-print(result,unans)
-```
-## Output
-![image](https://github.com/user-attachments/assets/e70a894f-f424-46f6-b4ba-d7cb88bfe8f2)
+2. Get the frame size from the user
 
-![image](https://github.com/user-attachments/assets/48481bae-5bd4-4d57-96e7-ba22ef84da28)
+3. To create the frame based on the user request.
+
+4. To send frames to server from the client side.
+
+5. If your frames reach the server it will send ACK signal to client otherwise it will send NACK signal to client.
+
+6. Stop the program
+
+## Program 
+```python
+import socket
+
+def send_request(host, port, request):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((host, port))
+        s.sendall(request.encode())
+        response = s.recv(4096).decode()
+    return response
+
+def upload_file(host, port, filename):
+    with open(filename, 'rb') as file:
+        file_data = file.read()
+        content_length = len(file_data)
+        request = f"POST /upload HTTP/1.1\r\nHost: {host}\r\nContent-Length: {content_length}\r\n\r\n"
+        request += file_data.decode()
+        response = send_request(host, port, request)
+    return response
+
+def download_file(host, port, filename):
+    request = f"GET /{filename} HTTP/1.1\r\nHost: {host}\r\n\r\n"
+    response = send_request(host, port, request)
+    # Assuming the response contains the file content after the headers
+    file_content = response.split('\r\n\r\n', 1)[1]
+    with open(filename, 'wb') as file:
+        file.write(file_content.encode())
+
+if __name__ == "__main__":
+    host = 'example.com'
+    port = 80
+
+    # Upload file
+    upload_response = upload_file(host, port, 'example.txt')
+    print("Upload response:", upload_response)
+
+    # Download file
+    download_file(host, port, 'example.txt')
+    print("File downloaded successfully.")
+```
+## OUTPUT
+![image](https://github.com/user-attachments/assets/1f4f571d-6865-41f5-8d43-d148f25fbbb1)
+
 
 ## Result
-Thus Execution of Network commands Performed 
+Thus the socket for HTTP for web page upload and download created and Executed
